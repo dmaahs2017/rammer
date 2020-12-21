@@ -1,0 +1,12 @@
+#!/bin/bash
+# move the last N files from_dir to_dir
+# this script is to help separate training data from validation data 
+from_dir=$1
+to_dir=$2
+N=$3
+
+files=$(ls $from_dir | tail -n $N)
+
+for file in $files; do 
+  mv $from_dir/$file $to_dir
+done
