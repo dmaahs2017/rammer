@@ -46,7 +46,7 @@ impl BagOfWords {
     }
 
     pub fn total_word_count(&self) -> Count {
-        self.bow.values().fold(0, |acc, n| acc + n)
+        self.bow.values().sum()
     }
 
     pub fn word_frequency(&self, word: &str) -> Option<Frequency> {
@@ -59,7 +59,7 @@ impl BagOfWords {
         }
 
         self.bow
-            .get(word_vec[0])
+            .get(&word_vec[0].to_uppercase()[..])
             .and_then(|&v| Some(v as Frequency / self.total_word_count() as Frequency))
     }
 }
@@ -112,7 +112,8 @@ impl HSModel {
     }
 
     pub fn text_spam_probability(&self, text: &str) -> Frequency {
-        let (product, prod_of_diffs) = text
+        let n: f64 = text
+            .to_uppercase()
             .split_word_bounds()
             .filter(|&s| !s.trim().is_empty())
             .filter_map(|word| {
@@ -120,13 +121,14 @@ impl HSModel {
                     self.spam_bow.word_frequency(word),
                     self.ham_bow.word_frequency(word),
                 ) {
-                    Some(spam_freq / (spam_freq * ham_freq))
+                    let p = spam_freq / (spam_freq + ham_freq);
+                    Some(Frequency::ln(1.0 - p) - Frequency::ln(p))
                 } else {
                     None
                 }
             })
-            .fold((1f64, 1f64), |acc, p| (acc.0 * p, acc.1 * (1f64 - p)));
-        product / (product + prod_of_diffs)
+            .sum();
+        1.0 / (1.0 + std::f64::consts::E.powf(n))
     }
 }
 
@@ -358,5 +360,45 @@ mod tests {
             .combine(BagOfWords::from("😊😊😊😊😊"));
 
         assert_eq!(fbow, bow);
+    }
+
+    /*****************************************/
+    /* WORD_FREQUENCY TESTS                  */
+    /*****************************************/
+    #[test]
+    fn freq_1() {
+        let bow = BagOfWords::from("hello hello hello hello");
+        assert_eq!(bow.word_frequency("hello").unwrap(), 1.0);
+    }
+
+    #[test]
+    fn freq_0() {
+        let bow = BagOfWords::from("hello hello hello hello");
+        assert!(bow.word_frequency("there").is_none());
+    }
+
+    #[test]
+    fn freq_1_of_2() {
+        let bow = BagOfWords::from("hello there");
+        assert_eq!(bow.word_frequency("hello").unwrap(), 0.5);
+    }
+
+    #[test]
+    fn freq_1_of_5() {
+        let bow = BagOfWords::from("hello there you cutie pie");
+        assert_eq!(bow.word_frequency("hello").unwrap(), 0.2);
+    }
+
+    /*****************************************/
+    /* HSModel TESTS                         */
+    /*****************************************/
+
+    #[test]
+    fn filter_test() {
+        let spam_bow = BagOfWords::from("spam spam spam spam ham");
+        let ham_bow = BagOfWords::from("spam ham");
+        let model = HSModel::from_bows(ham_bow, spam_bow);
+        assert!(model.text_spam_probability("spam") >= 0.0);
+        assert!(model.text_spam_probability("spam") <= 1.0);
     }
 }
