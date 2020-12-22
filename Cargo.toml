@@ -5,6 +5,11 @@ authors = ["Dalton Maahs <dalton.maahs@yourbind.com>"]
 edition = "2018"
 description = "A Baysian Text Classifier for Spam/Ham"
 license = "BEERWARE"
+homepage = "https://github.com/dmaahs2017/rammer"
+exclude = [
+  "data",
+  "scripts",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
