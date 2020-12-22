@@ -1,13 +1,17 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert;
 use std::fs;
 use std::iter;
-use serde::{Serialize, Deserialize};
 use unicode_segmentation::UnicodeSegmentation;
+
+pub type Frequency = f64;
+pub type Probability = f64;
+pub type Count = u32;
 
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct BagOfWords {
-    bow: HashMap<String, u32>,
+    bow: HashMap<String, Count>,
 }
 
 impl BagOfWords {
@@ -40,6 +44,24 @@ impl BagOfWords {
         }
         self
     }
+
+    pub fn total_word_count(&self) -> Count {
+        self.bow.values().fold(0, |acc, n| acc + n)
+    }
+
+    pub fn word_frequency(&self, word: &str) -> Option<Frequency> {
+        let word_vec: Vec<&str> = word
+            .split_word_bounds()
+            .filter(|&s| !s.trim().is_empty())
+            .collect();
+        if word_vec.len() == 0 || word_vec.len() > 1 {
+            return None;
+        }
+
+        self.bow
+            .get(word_vec[0])
+            .and_then(|&v| Some(v as Frequency / self.total_word_count() as Frequency))
+    }
 }
 
 impl convert::From<&str> for BagOfWords {
@@ -62,13 +84,59 @@ impl iter::FromIterator<BagOfWords> for BagOfWords {
     }
 }
 
+pub struct HSModel {
+    ham_bow: BagOfWords,
+    spam_bow: BagOfWords,
+}
+
+impl HSModel {
+    pub fn new() -> Self {
+        HSModel {
+            ham_bow: BagOfWords::new(),
+            spam_bow: BagOfWords::new(),
+        }
+    }
+
+    pub fn add_spam_bow(mut self, spam_bow: BagOfWords) -> Self {
+        self.spam_bow = self.spam_bow.combine(spam_bow);
+        self
+    }
+
+    pub fn add_ham_bow(mut self, ham_bow: BagOfWords) -> Self {
+        self.ham_bow = self.ham_bow.combine(ham_bow);
+        self
+    }
+
+    pub fn from_bows(ham_bow: BagOfWords, spam_bow: BagOfWords) -> Self {
+        HSModel::new().add_ham_bow(ham_bow).add_spam_bow(spam_bow)
+    }
+
+    pub fn text_spam_probability(&self, text: &str) -> Frequency {
+        let (product, prod_of_diffs) = text
+            .split_word_bounds()
+            .filter(|&s| !s.trim().is_empty())
+            .filter_map(|word| {
+                if let (Some(spam_freq), Some(ham_freq)) = (
+                    self.spam_bow.word_frequency(word),
+                    self.ham_bow.word_frequency(word),
+                ) {
+                    Some(spam_freq / (spam_freq * ham_freq))
+                } else {
+                    None
+                }
+            })
+            .fold((1f64, 1f64), |acc, p| (acc.0 * p, acc.1 * (1f64 - p)));
+        product / (product + prod_of_diffs)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::collections::HashMap;
 
     /*****************************************/
-    /* FROM &str TESTING */
+    /* FROM &str TESTS */
     /*****************************************/
 
     #[test]
