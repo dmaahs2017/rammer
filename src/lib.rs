@@ -10,5 +10,18 @@
 //! model.text_spam_probability("Hey it's greg, finished the data analysis");
 //! ```  
 
-mod bayes;
-pub use bayes::{HSModel, BagOfWords};
+mod bag_of_words;
+mod hs_model;
+pub use bag_of_words::BagOfWords;
+pub use hs_model::HSModel;
+
+/// Type alias for rate of occurences of a value.
+/// This type should always be between [0,1].
+pub type Frequency = f64;
+
+/// Type alias for the statistical probability of an event.
+/// This type should always be between [0,1].
+pub type Probability = f64;
+
+/// Type alias for number of times a word is found in a BagOfWords.
+pub type Count = u32;
