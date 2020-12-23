@@ -27,7 +27,7 @@ use crate::{Count, Frequency};
 /// ```
 /// use rammer::BagOfWords;
 /// use serde_json;
-/// let singly_trained_bow = BagOfWords::from_file("test_data/unicode_and_ascii.txt").unwrap();
+/// let singly_trained_bow = BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").unwrap();
 /// let big_bow = BagOfWords::from_folder("data/train/ham");
 /// let com_bow = singly_trained_bow.combine(big_bow);
 /// ```
@@ -51,10 +51,10 @@ impl BagOfWords {
 
     /// Create a BagOfWords from a text file.
     /// This file should already be known to be ham or spam.
-    /// The text file will be the basis of a new [HSModel's](HSModel) Ham/Spam BagOfWords
+    /// The text file will be the basis of a new [HSModel's](struct.HSModel.html) Ham/Spam BagOfWords
     /// ```
     /// # use rammer::BagOfWords;
-    /// let spam_bow = BagOfWords::from_file("test_data/unicode_and_ascii.txt").unwrap();
+    /// let spam_bow = BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").unwrap();
     /// ```
     pub fn from_file(file_path: &str) -> Option<Self> {
         fs::read_to_string(file_path)
@@ -366,21 +366,21 @@ mod tests {
 
     #[test]
     fn bow_from_file_ascii_only() {
-        let fbow: BagOfWords = BagOfWords::from_file("test_data/ascii_only.txt").unwrap();
+        let fbow: BagOfWords = BagOfWords::from_file("test_resources/test_data/ascii_only.txt").unwrap();
         let bow = BagOfWords::from("HELLO THERE WORLD");
         assert_eq!(fbow, bow);
     }
 
     #[test]
     fn bow_from_file_unicode_only() {
-        let fbow: BagOfWords = BagOfWords::from_file("test_data/unicode_only.txt").unwrap();
+        let fbow: BagOfWords = BagOfWords::from_file("test_resources/test_data/unicode_only.txt").unwrap();
         let bow = BagOfWords::from("😊😊😊😊😊");
         assert_eq!(fbow, bow);
     }
 
     #[test]
     fn bow_from_file_unicode_and_ascii() {
-        let fbow: BagOfWords = BagOfWords::from_file("test_data/unicode_and_ascii.txt").unwrap();
+        let fbow: BagOfWords = BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").unwrap();
         let bow = BagOfWords::from("😊😊😊😊😊 HELLO THERE WORLD");
         assert_eq!(fbow, bow);
     }
@@ -391,7 +391,7 @@ mod tests {
 
     #[test]
     fn bow_from_test_data_folder() {
-        let fbow: BagOfWords = BagOfWords::from_folder("test_data");
+        let fbow: BagOfWords = BagOfWords::from_folder("test_resources/test_data");
         let bow = BagOfWords::new()
             .combine(BagOfWords::from("hello there world"))
             .combine(BagOfWords::from("hello there world 😊😊😊😊😊"))

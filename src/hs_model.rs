@@ -1,5 +1,9 @@
+use std::fs;
+
+use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
-use crate::{ BagOfWords, Probability, Frequency };
+
+use crate::{BagOfWords, Frequency, Probability};
 
 /// A model which contains 2 BagOfWords, one containing known spam, and the other known ham.
 /// ```
@@ -8,6 +12,7 @@ use crate::{ BagOfWords, Probability, Frequency };
 /// let spam_bow = BagOfWords::from("I have an offer you won't be able to pass up!!!");
 /// let model = HSModel::new().add_spam_bow(spam_bow).add_ham_bow(ham_bow);
 /// ```
+#[derive(Serialize, Deserialize)]
 pub struct HSModel {
     ham_bow: BagOfWords,
     spam_bow: BagOfWords,
@@ -91,12 +96,38 @@ impl HSModel {
             .sum();
         1.0 / (1.0 + std::f64::consts::E.powf(n))
     }
+
+    /// Serializse HSModel to a compact json string and write it to file_path. This write is
+    /// destructive.
+    /// ```
+    /// # use rammer::{HSModel, BagOfWords};
+    /// # let model = HSModel::from_bows(BagOfWords::from("hi greetings afternoon well"), BagOfWords::from("buy pay sell free"));
+    /// model.write_to_json("test_resources/test_models/model.json");
+    /// ```
+    pub fn write_to_json(&self, file_path: &str) -> () {
+        if let Ok(serialized) = serde_json::to_string(self) {
+            fs::write(file_path, serialized).unwrap();
+        }
+    }
+
+    /// read a json string from file_path and deserialize it to HSModel.
+    /// ```
+    /// # use rammer::{HSModel, BagOfWords};
+    /// let model = HSModel::read_from_json("test_resources/test_models/model.json").unwrap();
+    /// ```
+    pub fn read_from_json(file_path: &str) -> Option<Self> {
+        if let Ok(serialized) = fs::read_to_string(file_path) {
+            serde_json::from_str(&serialized[..]).ok()
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::BagOfWords;
     use super::HSModel;
+    use crate::BagOfWords;
 
     /*****************************************/
     /* HSModel TESTS                         */
