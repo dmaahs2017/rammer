@@ -1,3 +1,10 @@
+//! A model which contains 2 BagOfWords, one containing known spam, and the other known ham.
+//! ```
+//! # use rammer::{BagOfWords, HSModel};
+//! let ham_bow = BagOfWords::from("hello there how are you");
+//! let spam_bow = BagOfWords::from("I have an offer you won't be able to pass up!!!");
+//! let model = HSModel::new().add_spam_bow(spam_bow).add_ham_bow(ham_bow);
+//! ```
 use std::fs;
 
 use serde::{Deserialize, Serialize};

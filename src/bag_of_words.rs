@@ -9,15 +9,13 @@
 //! model.text_spam_probability("hello i have an offer for you");
 //! model.text_spam_probability("Hey it's greg, finished the data analysis");
 //! ```  
+use std::{collections::HashMap, convert, fs, iter};
+
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::convert;
-use std::fs;
-use std::iter;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{Count, Frequency};
-
 
 /// A BagOfWords, also referred to as a bow, is a frequency map of words.
 /// Read more about the BagOfWords model here: [BagOfWords Wikipedia](https://en.wikipedia.org/wiki/Bag-of-words_model).
@@ -71,6 +69,7 @@ impl BagOfWords {
     pub fn from_folder(dir_path: &str) -> Self {
         fs::read_dir(dir_path)
             .expect("ok")
+            .par_bridge()
             .filter_map(|entry| {
                 entry
                     .ok()
@@ -153,8 +152,8 @@ impl convert::From<&str> for BagOfWords {
 /// ```
 /// # use rammer::BagOfWords;
 /// let bow: BagOfWords = vec![
-///     BagOfWords::from("hi"), 
-///     BagOfWords::new(), 
+///     BagOfWords::from("hi"),
+///     BagOfWords::new(),
 ///     BagOfWords::from("Big sale!")]
 ///     .into_iter().collect();
 /// ```
@@ -169,6 +168,28 @@ impl iter::FromIterator<BagOfWords> for BagOfWords {
     }
 }
 
+/// Use [.collect()](https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.collect)
+/// over a parallel iterator of BagOfWords to additively combine them with [combine](struct.BagOfWords.html#method.combine)
+/// use [rayon](https://docs.rs/rayon/1.0.1/rayon/index.html) crate to make .into_par_iter()
+/// available.
+/// ```
+/// # use rammer::BagOfWords;
+/// use rayon::prelude::*;
+/// let bow: BagOfWords = vec![
+///     BagOfWords::from("hi"),
+///     BagOfWords::new(),
+///     BagOfWords::from("Big sale!")]
+///     .into_par_iter().collect();
+/// ```
+impl FromParallelIterator<BagOfWords> for BagOfWords {
+    #[allow(missing_doc_code_examples)]
+    fn from_par_iter<I>(par_iter: I) -> Self
+        where I: IntoParallelIterator<Item = BagOfWords>
+    {
+        //let par_iter = par_iter.into_par_iter();
+        par_iter.into_par_iter().reduce(|| BagOfWords::new(), |a, b| a.combine(b))
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -366,21 +387,24 @@ mod tests {
 
     #[test]
     fn bow_from_file_ascii_only() {
-        let fbow: BagOfWords = BagOfWords::from_file("test_resources/test_data/ascii_only.txt").unwrap();
+        let fbow: BagOfWords =
+            BagOfWords::from_file("test_resources/test_data/ascii_only.txt").unwrap();
         let bow = BagOfWords::from("HELLO THERE WORLD");
         assert_eq!(fbow, bow);
     }
 
     #[test]
     fn bow_from_file_unicode_only() {
-        let fbow: BagOfWords = BagOfWords::from_file("test_resources/test_data/unicode_only.txt").unwrap();
+        let fbow: BagOfWords =
+            BagOfWords::from_file("test_resources/test_data/unicode_only.txt").unwrap();
         let bow = BagOfWords::from("😊😊😊😊😊");
         assert_eq!(fbow, bow);
     }
 
     #[test]
     fn bow_from_file_unicode_and_ascii() {
-        let fbow: BagOfWords = BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").unwrap();
+        let fbow: BagOfWords =
+            BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").unwrap();
         let bow = BagOfWords::from("😊😊😊😊😊 HELLO THERE WORLD");
         assert_eq!(fbow, bow);
     }
@@ -426,5 +450,4 @@ mod tests {
         let bow = BagOfWords::from("hello there you cutie pie");
         assert_eq!(bow.word_frequency("hello").unwrap(), 0.2);
     }
-
 }

@@ -3,5 +3,6 @@
 /data/train
 /data/validate
 /data/raw/enron*/
+/test_resources/test_models
 **/.DS_Store
 
