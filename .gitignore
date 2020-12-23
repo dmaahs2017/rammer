@@ -1,5 +1,7 @@
 /target
 /out
+/data/train
+/data/validate
 /data/raw/enron*/
 **/.DS_Store
 
