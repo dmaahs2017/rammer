@@ -433,7 +433,7 @@ mod tests {
     #[test]
     fn freq_1() {
         let bow = BagOfWords::from("hello hello hello hello");
-        assert_eq!(bow.word_frequency("hello").unwrap(), 1.0);
+        assert_eq!(bow.word_frequency("hello").unwrap(), 1.0f64);
     }
 
     #[test]
@@ -445,12 +445,12 @@ mod tests {
     #[test]
     fn freq_1_of_2() {
         let bow = BagOfWords::from("hello there");
-        assert_eq!(bow.word_frequency("hello").unwrap(), 0.5);
+        assert_eq!(bow.word_frequency("hello").unwrap(), 0.5f64);
     }
 
     #[test]
     fn freq_1_of_5() {
         let bow = BagOfWords::from("hello there you cutie pie");
-        assert_eq!(bow.word_frequency("hello").unwrap(), 0.2);
+        assert_eq!(bow.word_frequency("hello").unwrap(), 0.2f64);
     }
 }
