@@ -21,8 +21,10 @@ use crate::{BagOfWords, Frequency, Probability};
 /// ```
 #[derive(Serialize, Deserialize)]
 pub struct HSModel {
-    ham_bow: BagOfWords,
-    spam_bow: BagOfWords,
+    /// BagOfWords that are known to be found in non-spam (ham) text.
+    pub ham_bow: BagOfWords,
+    /// BagOfWords that are know to be found in spam text.
+    pub spam_bow: BagOfWords,
 }
 
 #[allow(missing_doc_code_examples)]
@@ -106,7 +108,7 @@ impl HSModel {
 
     /// Serializse HSModel to a compact json string and write it to file_path. This write is
     /// destructive.
-    /// ```
+    /// ```no_run
     /// # use rammer::{HSModel, BagOfWords};
     /// # let model = HSModel::from_bows(BagOfWords::from("hi greetings afternoon well"), BagOfWords::from("buy pay sell free"));
     /// model.write_to_json("test_resources/test_models/model.json");
@@ -118,8 +120,10 @@ impl HSModel {
     }
 
     /// read a json string from file_path and deserialize it to HSModel.
-    /// ```
+    /// ```no_run
     /// # use rammer::{HSModel, BagOfWords};
+    /// # let model = HSModel::from_bows(BagOfWords::from("hi greetings afternoon well"), BagOfWords::from("buy pay sell free"));
+    /// # model.write_to_json("test_resources/test_models/model.json");
     /// let model = HSModel::read_from_json("test_resources/test_models/model.json").unwrap();
     /// ```
     pub fn read_from_json(file_path: &str) -> Option<Self> {

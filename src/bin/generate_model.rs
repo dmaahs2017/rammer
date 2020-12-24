@@ -1,4 +1,4 @@
-use rammer::{ HSModel, BagOfWords };
+use rammer::{BagOfWords, HSModel};
 
 fn main() {
     let spam_bow = BagOfWords::from_folder("data/train/spam");

@@ -1,0 +1,10 @@
+
+Enron 1 Only Model
+Spam Correctly Classified: 545/568 = 0.9595
+Ham Correctly Classified: 1998/2361 = 0.8463
+./target/release/validate_model  275.99s user 1.93s system 684% cpu 40.582 total
+
+Enron 1 + Enron 2 Model
+Spam Correctly Classified: 543/568 = 0.9560
+Ham Correctly Classified: 2246/2361 = 0.9513
+./target/release/validate_model  427.41s user 3.00s system 644% cpu 1:06.80 total

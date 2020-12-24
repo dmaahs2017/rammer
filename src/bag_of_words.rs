@@ -1,7 +1,7 @@
 //! BagOfWords is used for representing frequency of word occurences in known spam/ham text.
 //! HSModel uses a Spam BagOfWords and a Ham BagOfWords to calculate probability that a given text
 //! is spam.
-//! ```
+//! ```no_run
 //! use rammer::{HSModel, BagOfWords};
 //! let spam_bow = BagOfWords::from_folder("data/train/spam");
 //! let ham_bow = BagOfWords::from_folder("data/train/ham");
@@ -22,7 +22,7 @@ use crate::{Count, Frequency};
 /// BagOfWords works with Unicode Words. Words are defined by as between
 /// [UAX#29 word boundaries](http://www.unicode.org/reports/tr29/#Word_Boundaries).
 /// BagOfWords is serializable using one of the [serde serialization crates](https://serde.rs/#data-formats)
-/// ```
+/// ```no_run
 /// use rammer::BagOfWords;
 /// use serde_json;
 /// let singly_trained_bow = BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").unwrap();
@@ -62,7 +62,7 @@ impl BagOfWords {
 
     /// Create a BagOfWords from a folder containing either spam training text files, or ham
     /// training text files.
-    /// ```
+    /// ```no_run
     /// # use rammer::BagOfWords;
     /// let spam_bow = BagOfWords::from_folder("data/train/spam");
     /// ```
@@ -184,10 +184,13 @@ impl iter::FromIterator<BagOfWords> for BagOfWords {
 impl FromParallelIterator<BagOfWords> for BagOfWords {
     #[allow(missing_doc_code_examples)]
     fn from_par_iter<I>(par_iter: I) -> Self
-        where I: IntoParallelIterator<Item = BagOfWords>
+    where
+        I: IntoParallelIterator<Item = BagOfWords>,
     {
         //let par_iter = par_iter.into_par_iter();
-        par_iter.into_par_iter().reduce(|| BagOfWords::new(), |a, b| a.combine(b))
+        par_iter
+            .into_par_iter()
+            .reduce(|| BagOfWords::new(), |a, b| a.combine(b))
     }
 }
 
