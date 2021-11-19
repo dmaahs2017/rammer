@@ -29,7 +29,7 @@ use crate::{Count, Frequency};
 /// let big_bow = BagOfWords::from_folder("data/train/ham");
 /// let com_bow = singly_trained_bow.combine(big_bow);
 /// ```
-#[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
 pub struct BagOfWords {
     bow: HashMap<String, Count>,
 }
