@@ -111,12 +111,13 @@ impl HSModel {
     /// ```no_run
     /// # use rammer::{HSModel, BagOfWords};
     /// # let model = HSModel::from_bows(BagOfWords::from("hi greetings afternoon well"), BagOfWords::from("buy pay sell free"));
-    /// model.write_to_json("test_resources/test_models/model.json");
+    /// model.write_to_json("test_resources/test_models/model.json").expect("Write unsucessful");
     /// ```
-    pub fn write_to_json(&self, file_path: &str) {
+    pub fn write_to_json(&self, file_path: &str) -> Option<()> {
         if let Ok(serialized) = serde_json::to_string(self) {
-            fs::write(file_path, serialized).unwrap();
+            fs::write(file_path, serialized).ok()?;
         }
+        Some(())
     }
 
     /// read a json string from file_path and deserialize it to HSModel.
