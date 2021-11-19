@@ -19,7 +19,7 @@ use crate::{BagOfWords, Frequency, Probability};
 /// let spam_bow = BagOfWords::from("I have an offer you won't be able to pass up!!!");
 /// let model = HSModel::new().add_spam_bow(spam_bow).add_ham_bow(ham_bow);
 /// ```
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct HSModel {
     /// BagOfWords that are known to be found in non-spam (ham) text.
     pub ham_bow: BagOfWords,
