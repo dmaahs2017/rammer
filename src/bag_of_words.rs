@@ -3,8 +3,8 @@
 //! is spam.
 //! ```no_run
 //! use rammer::{HSModel, BagOfWords};
-//! let spam_bow = BagOfWords::from_folder("data/train/spam");
-//! let ham_bow = BagOfWords::from_folder("data/train/ham");
+//! let spam_bow = BagOfWords::from_folder("data/train/spam").expect("Folder not found");
+//! let ham_bow = BagOfWords::from_folder("data/train/ham").expect("Folder not found");
 //! let model = HSModel::from_bows(ham_bow, spam_bow);
 //! model.text_spam_probability("hello i have an offer for you");
 //! model.text_spam_probability("Hey it's greg, finished the data analysis");
@@ -25,8 +25,8 @@ use crate::{Count, Frequency};
 /// ```no_run
 /// use rammer::BagOfWords;
 /// use serde_json;
-/// let singly_trained_bow = BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").unwrap();
-/// let big_bow = BagOfWords::from_folder("data/train/ham");
+/// let singly_trained_bow = BagOfWords::from_file("test_resources/test_data/unicode_and_ascii.txt").expect("File not found");
+/// let big_bow = BagOfWords::from_folder("data/train/ham").expect("Folder not found");
 /// let com_bow = singly_trained_bow.combine(big_bow);
 /// ```
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
@@ -66,16 +66,16 @@ impl BagOfWords {
     /// # use rammer::BagOfWords;
     /// let spam_bow = BagOfWords::from_folder("data/train/spam");
     /// ```
-    pub fn from_folder(dir_path: &str) -> Self {
-        fs::read_dir(dir_path)
-            .expect("ok")
+    pub fn from_folder(dir_path: &str) -> Option<Self> {
+        let bow: BagOfWords = fs::read_dir(dir_path).ok()?
             .par_bridge()
             .filter_map(|entry| {
                 entry
                     .ok()
                     .and_then(|e| e.path().to_str().and_then(|p| BagOfWords::from_file(p)))
-            })
-            .collect()
+            }).collect();
+
+        Some(bow)
     }
 
     /// Combines two BagOfWords into a new BagOfWords.
@@ -418,7 +418,7 @@ mod tests {
 
     #[test]
     fn bow_from_test_data_folder() {
-        let fbow: BagOfWords = BagOfWords::from_folder("test_resources/test_data");
+        let fbow: BagOfWords = BagOfWords::from_folder("test_resources/test_data").expect("Folder not found");
         let bow = BagOfWords::new()
             .combine(BagOfWords::from("hello there world"))
             .combine(BagOfWords::from("hello there world 😊😊😊😊😊"))
