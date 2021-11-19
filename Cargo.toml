@@ -1,6 +1,6 @@
 [package]
 name = "rammer"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Dalton Maahs <dalton.maahs@yourbind.com>"]
 edition = "2018"
 description = "A Baysian Text Classifier for Spam/Ham"
