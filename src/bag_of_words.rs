@@ -31,7 +31,7 @@ use crate::{Count, Frequency};
 /// ```
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
 pub struct BagOfWords {
-    bow: HashMap<String, Count>,
+    pub bow: HashMap<String, Count>,
 }
 
 #[allow(missing_doc_code_examples)]
@@ -60,6 +60,17 @@ impl BagOfWords {
             .and_then(|s| Some(BagOfWords::from(&s[..])))
     }
 
+    pub fn top_10_count(&self) -> Vec<(u32, String)> {
+        let mut top_ten = vec![];
+        for (word, count) in &self.bow {
+            top_ten.push((count.clone(), word.to_string()));
+        }
+
+        top_ten.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+
+        return top_ten[0..50].to_vec();
+    }
+
     /// Create a BagOfWords from a folder containing either spam training text files, or ham
     /// training text files.
     /// ```no_run
@@ -67,13 +78,15 @@ impl BagOfWords {
     /// let spam_bow = BagOfWords::from_folder("data/train/spam");
     /// ```
     pub fn from_folder(dir_path: &str) -> Option<Self> {
-        let bow: BagOfWords = fs::read_dir(dir_path).ok()?
+        let bow: BagOfWords = fs::read_dir(dir_path)
+            .ok()?
             .par_bridge()
             .filter_map(|entry| {
                 entry
                     .ok()
                     .and_then(|e| e.path().to_str().and_then(|p| BagOfWords::from_file(p)))
-            }).collect();
+            })
+            .collect();
 
         Some(bow)
     }
@@ -418,7 +431,8 @@ mod tests {
 
     #[test]
     fn bow_from_test_data_folder() {
-        let fbow: BagOfWords = BagOfWords::from_folder("test_resources/test_data").expect("Folder not found");
+        let fbow: BagOfWords =
+            BagOfWords::from_folder("test_resources/test_data").expect("Folder not found");
         let bow = BagOfWords::new()
             .combine(BagOfWords::from("hello there world"))
             .combine(BagOfWords::from("hello there world 😊😊😊😊😊"))
