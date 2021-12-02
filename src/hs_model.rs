@@ -53,6 +53,44 @@ impl HSModel {
         self
     }
 
+    pub fn top_ten_disproportionately_ham(&self) -> Vec<(String, Frequency)> {
+        // collect all words
+        let complete_bow = self.spam_bow.clone().combine(self.ham_bow.clone());
+        let words: Vec<String> = complete_bow.bow.keys().map(|v| v.to_string()).collect();
+
+        // test all words against the model
+        let mut probabilities = vec![];
+        for word in words {
+            let p = self.text_spam_probability(&word);
+            probabilities.push(( word.to_string(), p ))
+        }
+
+        // get top 10 spam indicators
+        probabilities.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+        // return those indicators with their frequencies
+        probabilities[0..11].to_vec()
+    }
+
+    pub fn top_ten_disproportionately_spam(&self) -> Vec<(String, Frequency)> {
+        // collect all words
+        let complete_bow = self.spam_bow.clone().combine(self.ham_bow.clone());
+        let words: Vec<String> = complete_bow.bow.keys().map(|v| v.to_string()).collect();
+
+        // test all words against the model
+        let mut probabilities = vec![];
+        for word in words {
+            let p = self.text_spam_probability(&word);
+            probabilities.push(( word.to_string(), p ))
+        }
+
+        // get top 10 spam indicators
+        probabilities.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+        // return those indicators with their frequencies
+        probabilities[0..10].to_vec()
+    }
+
     /// Builder pattern for adding a ham_bow with the [combine](struct.BagOfWords.html#method.combine) method.
     /// ```
     /// # use rammer::{BagOfWords, HSModel};
