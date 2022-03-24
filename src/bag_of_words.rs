@@ -31,7 +31,8 @@ use crate::{Count, Frequency};
 /// ```
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
 pub struct BagOfWords {
-    bow: HashMap<String, Count>,
+    /// TODO DOCument
+    pub bow: HashMap<String, Count>,
 }
 
 #[allow(missing_doc_code_examples)]
@@ -74,6 +75,19 @@ impl BagOfWords {
                     .ok()
                     .and_then(|e| e.path().to_str().and_then(|p| BagOfWords::from_file(p)))
             }).collect();
+
+        Some(bow)
+    }
+
+    /// TODO Document
+    pub fn read_from_csv(file_path: &str) -> Option<Self> {
+        let mut bow = BagOfWords::new();
+        let mut reader = csv::Reader::from_path(file_path).ok()?;
+        for result in reader.records() {
+            let record = result.ok()?;
+            let (word, count) = record.deserialize::<(String, u32)>(None).ok()?;
+            bow.bow.insert(word, count);
+        }
 
         Some(bow)
     }

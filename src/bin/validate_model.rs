@@ -1,9 +1,15 @@
-use rammer::HSModel;
+use rammer::{ HSModel, BagOfWords };
 use rayon::prelude::*;
 use std::fs;
 
 fn main() {
-    let model = HSModel::read_from_json("out/models/enron1_model.json").unwrap();
+    let model = HSModel {
+        spam_bow: BagOfWords::read_from_csv("filtered_spam.csv").unwrap(),
+        ham_bow: BagOfWords::read_from_csv("filtered_ham.csv").unwrap(),
+    };
+
+    //let model = HSModel::read_from_json("out/models/enron1_model.json").unwrap();
+
     let spam_answers = validate(&model, "data/validate/spam", "spam", |p| p > 0.8);
     let ham_answers = validate(&model, "data/validate/ham", "ham", |p| p < 0.2);
 
@@ -23,7 +29,6 @@ where
 {
     let ps: Vec<bool> = fs::read_dir(dir)
         .expect("folder exists")
-        .par_bridge()
         .filter_map(|maybe_entry| {
             maybe_entry.ok().and_then(|entry| {
                 fs::read_to_string(entry.path())
@@ -31,6 +36,7 @@ where
                     .and_then(|text| Some(model.text_spam_probability(&text[..])))
             })
         })
+        .take(100)
         .map(|p| {
             println!("Probability: {:.8}\t\t({})", p, class);
             is_correct(p)
