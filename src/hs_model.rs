@@ -120,6 +120,30 @@ impl HSModel {
         Some(())
     }
 
+    /// TODO: Document
+    pub fn write_ham_spam_separate_json(&self) -> Option<()> {
+
+        let mut ham_writer = csv::Writer::from_path("out/ham.csv").ok()?;
+        for (k, v) in self.ham_bow.bow.iter() {
+            ham_writer.write_record(&[k, &v.to_string()]).ok()?;
+        }
+
+        let mut spam_writer = csv::Writer::from_path("out/spam.csv").ok()?;
+        for (k, v) in self.spam_bow.bow.iter() {
+            spam_writer.write_record(&[k, &v.to_string()]).ok()?;
+        }
+
+        //if let Ok(serialized) = serde_json::to_string(&ham_tuples) {
+        //    fs::write("ham.json", serialized).ok()?;
+        //}
+        //if let Ok(serialized) = serde_json::to_string(&spam_tuples) {
+        //    fs::write("spam.json", serialized).ok()?;
+        //}
+
+
+        Some(())
+    }
+
     /// read a json string from file_path and deserialize it to HSModel.
     /// ```no_run
     /// # use rammer::{HSModel, BagOfWords};
@@ -134,6 +158,7 @@ impl HSModel {
             None
         }
     }
+
 }
 
 impl Default for HSModel {
